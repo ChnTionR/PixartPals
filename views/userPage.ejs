@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UserPage</title>
+</head>
+<body>
+    <span id="top-bar">
+        <h3>Welcome Home <%=username%>!</h3>
+        <form action="/logout/<%=userID%>", method="POST">
+            <button type="submit">Logout</button>
+        </form>
+    </span>
+    <span id="main-area">
+        <canvas id="canvas", width="640", height="640"></canvas>
+        <button id="finish-drawing">Finish Drawing</button>
+    </span>
+    <script>
+        const canvas = document.getElementById('canvas')
+        const ctx = canvas.getContext('2d')
+        const gridSize = 32
+
+        const finishButton = document.getElementById('finish-drawing')
+
+        let mouseDown = false
+
+        ctx.fillStyle="white"
+        ctx.fillRect(0,0,640,640)
+        ctx.lineWidth = '1';
+
+        //create pixel grid
+        ctx.fillRect(0,0,canvas.width,canvas.height)
+        for(let y = 0; y < gridSize; y++){
+            for(let x = 0; x < gridSize; x++){
+                ctx.rect(20*x, 20*y, 20, 20)
+            }
+        }
+        ctx.stroke();
+
+        //listeners for mouse events and states
+        canvas.addEventListener("mousedown",(ev)=>{
+            mouseDown = true
+
+            const mouseCellX = Math.floor(ev.offsetX / 20)
+            const mouseCellY = Math.floor(ev.offsetY / 20)
+
+            draw(mouseCellX,mouseCellY)
+        })
+
+        canvas.addEventListener("mouseup",()=>{
+            mouseDown = false
+        })
+
+        canvas.addEventListener("mouseleave",()=>{
+            mouseDown = false
+        })
+
+        canvas.addEventListener("mousemove",(ev)=>{
+            if(mouseDown){
+                const mouseCellX = Math.floor(ev.offsetX / 20)
+                const mouseCellY = Math.floor(ev.offsetY / 20)
+
+                draw(mouseCellX,mouseCellY)
+            }
+        })
+
+        //finish and print out drawing
+        finishButton.addEventListener("click",()=>{
+            //read grid
+            let grid = []
+            for(let y = 0; y < gridSize; y++){
+                let row = []
+                for(let x = 0; x < gridSize; x++){
+                    const cellData = ctx.getImageData(x*20 + 10,y*20+10,1,1).data
+                    row.push([cellData[0],cellData[1],cellData[2]])
+                }
+                grid.push(row)
+            }
+            console.log(JSON.stringify(grid))
+        })
+
+        //fill cell
+        function draw(x,y){
+            ctx.fillStyle = "pink"
+            ctx.fillRect(x * 20 + 1, y * 20 + 1, 18, 18)
+        }
+
+    </script>
+</body>
+</html>
